@@ -7,7 +7,7 @@ variance_reward_init = 1
 variance_reward = 1
 mean_reward_init = 0
 n_step = 1000
-n_sim = 1
+n_sim = 1000
 print_every = 20000
 print_every_sim = 10
 stationary_mode = True
@@ -19,10 +19,13 @@ parameters = [
             {'Q':0, 'eps':0, 'ucb':1, 'c':1/16}, {'Q':0, 'eps':0, 'ucb':1, 'c': 1/8},
             {'Q':0, 'eps':0, 'ucb':1, 'c':1/4}, {'Q':0, 'eps':0, 'ucb':1, 'c': 1/2},
             {'Q':0, 'eps':0, 'ucb':1, 'c':1}, {'Q':0, 'eps':0, 'ucb':1, 'c': 2},
-            {'Q':0, 'eps':0, 'ucb':1, 'c':4}, {'Q':0, 'eps':0, 'ucb':1, 'c': 8},
+            {'Q':0, 'eps':0, 'ucb':1, 'c':4},  {'Q':0, 'eps':0, 'ucb':1, 'c': 8},
             ]
 # parameters to set #######################
 avg_scores = np.zeros((1, len(parameters)))
+step_begin = 0
+step_end = n_step
+assert step_begin<=step_end<=n_step, "step begin and step end parameters are wrong check them again"
 fig ,ax = plt.subplots()
 fig2, ax2 = plt.subplots()
 fig3, ax3 = plt.subplots()
@@ -78,11 +81,13 @@ for cur_params, cur_params_idx in zip(parameters, range(len(parameters))):
     # ax2.plot(np.mean(action_counts_ratio, axis=0)*100, label='Q1: {}, eps: {}'.format(action_value_init, eps))
     ax2.plot(np.sum(action_counts_true, axis=0)/n_sim*100, label=label_txt)
     print('param progress: {}/{}'.format(cur_params_idx+1, len(parameters)))
-    avg_scores[0, cur_params_idx] = np.mean(np.mean(average_reward, axis=0))
+    avg_scores[0, cur_params_idx] = np.mean(np.mean(average_reward[:,step_begin:step_end:], axis=0))
 ax.legend()
 ax2.legend()
 x_axis = np.power(2.0, np.arange(-6, 4, 1))
-ax3.plot(x_axis, avg_scores)
+ax3.plot(x_axis, avg_scores.flatten())
 ax3.set_xscale('log')
+ax3.set_xticks(ticks=x_axis.tolist())
+ax3.set_xticklabels(labels=['1/64', '1/32', '1/16', '1/8', '1/4', '1/2', '1', '2', '4', '8'])
 plt.show()
 print('avg scores: ', avg_scores)
